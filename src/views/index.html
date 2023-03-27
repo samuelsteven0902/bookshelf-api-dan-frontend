@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="../asset/bootstrap.min.css"> -->
+
+    <title>Document</title>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="row">
+
+            <div class="py-3 mb-3 bg-info rounded-3">
+                <h1 class="my-3 d-flex justify-content-center">Bookshelf - API dengan FrontEnd Sederhana</h1>
+            </div>
+        <div class="col-6">
+            <div class="card p-3 bg-light">
+                <h3 class="text-center">Tambah Buku </h3>
+                <div class="mb-3">
+                    <label for="name" class="form-label" >Name: </label>
+                    <input type="text" id="name"  class="form-control"/>
+                </div>
+                <div class="mb-3">
+                    <label for="author" class="form-label" >Penulis: </label>
+                    <input type="text" id="author"  class="form-control"/>
+                </div> 
+                <div class="mb-3">
+                    <label for="sum" class="form-label" >Ringkasan : </label>
+                    <textarea type="text" id="sum"  class="form-control"></textarea>
+                </div> 
+                <div class="mb-3">
+                    <label for="textInput1" class="form-label" >Penerbit: </label>
+                    <input type="text" id="publisher" class="form-control" />
+                </div> 
+                <div class="d-flex justify-content-between">
+                    <div class="">
+                        <label for="textInput1" class="form-label" >Tahun terbit: </label>
+                        <input type="number" id="year" class="form-control" />
+                    </div> 
+                    <div class="d-flex justify-content-end align-bottom align-items-end item">
+                        
+                    <button type="button" onclick="getInputValue()" class="btn btn-primary h-75">
+                        Tambah Buku
+                    </button>
+                    </div>
+                </div>
+            </div>
+                
+                <div class="d-flex justify-content-center">
+                    <button type="button" onclick="getAllBook()" class="btn btn-warning m-3 w-100 ">
+                        Tampilkan Semua Buku
+                        </button>
+                </div>
+                
+    
+    
+        </div>
+        <div class="col-5">
+            <p class="fs-3">Daftar Buku :</p>
+            <div id="toAppend"></div> 
+        </div>
+        </div>
+
+    </div>
+
+
+<script>
+    function getInputValue() {
+        let nama = document.getElementById("name").value;
+        let author = document.getElementById("author").value;
+        let summary = document.getElementById("sum").value;
+        let publisher = document.getElementById("publisher").value;
+        let year = document.getElementById("year").value;
+
+      const data = {
+    "name": nama,
+    "year": year,
+    "author": author,
+    "summary": summary,
+    "publisher": publisher,
+    "pageCount": 100,
+    "readPage": 50,
+    "reading": false
+    }
+      
+      fetch('http://localhost:9000/books', {
+            method: 'POST',
+            body: JSON.stringify(data) ,
+            headers: {
+                'Content-type': 'application/json; charset=utf-8' // The type of data you're sending
+            }
+        }).then(function (response) {
+            if (response.ok) {
+                document.getElementById('name').value = ''
+                document.getElementById('author').value = ''
+                document.getElementById('sum').value = ''
+                document.getElementById('publisher').value = ''
+                document.getElementById('year').value = ''
+                getAllBook();
+                alert("Berhasil Menambahkan");
+                return response.json();
+            } else {
+                alert("Gagal Menambahkan buku");
+            }
+            
+            return Promise.reject(response);
+        }).then(function (data) {
+            console.log(data);
+        }).catch(function (error) {
+            console.warn('Something went wrong.', error);
+            console.log(error);
+        });
+        
+        ;
+    }
+
+    let books = [];
+    let error = [];
+
+    const getAllBook = () => {
+        fetch('http://localhost:9000/books', {
+            method: 'GET',
+        }).then(function (response) {
+            if (response.ok) {
+                toAppend.innerHTML = "";
+                return response.json();
+            }
+            return Promise.reject(response);
+        }).then(function (data) {
+            books = data.data.books;
+            console.log(data);
+        }).then(() => {
+            if (books.length == 0 )
+            {
+                toAppend.innerHTML += `<div class="alert alert-danger" role="alert">
+                                        Tidak Ada Buku
+                                        </div>`;
+            } else {
+                for (let item of books) {
+            toAppend.innerHTML += `
+            <div class="card mb-3" id="${item.id}">
+            <div class="card-header">
+                ${item.name}
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                <p>${item.summary}</p>
+                <footer class="blockquote-footer">${item.author}  ||  <cite title="Source Title">${item.publisher}</cite> ~${item.year}</footer>
+                </blockquote>
+            </div>
+            <button class="btn btn-danger" onClick="{(()=>deleteBuku('${item.id}'))()}">delete buku</button>
+            </div>
+                `;
+            }
+            }
+        });
+        
+    }
+
+    const deleteBuku = (id) =>
+    {
+        console.log(id);
+
+        fetch(`http://localhost:9000/books/` + id, {
+            method: 'DELETE',
+        }).then(function (response) {
+            if (response.ok) {
+                alert("Berhasil Menghapus Buku");
+                getAllBook();
+                return response.json();
+            } else {
+                alert("Gagal Menambahkan buku");
+            }
+            
+            return Promise.reject(response);
+        }).then(function (data) {
+            console.log(data);
+        }).catch(function (error) {
+            console.warn('Something went wrong.', error);
+            console.log(error);
+        });
+    }
+    
+
+  </script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
+   <!-- <script src="../asset/bootstrap.bundle.min.js"></script> -->
+</body>
+</html>

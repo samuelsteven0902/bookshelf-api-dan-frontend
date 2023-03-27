@@ -1,0 +1,19 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": "google",
+    "overrides": [
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "linebreak-style": ["error", "windows"],
+        "indent": "off",
+        "eol-last": ["error", "never"] ,
+        "max-len": ["error", { "code": 120 }]   
+    }
+}
